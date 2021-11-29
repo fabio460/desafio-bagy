@@ -9,7 +9,9 @@ const run = require('./mailer')
 
 //GETs
 const listarProduto =async ()=>{
-    return await modelProduto.findAll()
+    let res = await modelProduto.findAll()
+    //console.log(res)
+    return res
   }
   const listarClientes =async ()=>{
     return await modelClientes.findAll()
@@ -17,6 +19,8 @@ const listarProduto =async ()=>{
   const listarPedidos =async ()=>{
       return await modelPedido.findAll()
   }
+
+
 
 
 
@@ -117,11 +121,12 @@ const listarProduto =async ()=>{
     
                 enviarEmail(emailDaEmpresa,Email,informacoesParaOCliente,assuntoDoEmail,nomeDaEmpresa)
             }
-            console.log(`venda registrada com sucesso`)
+           
             console.log(`produto ${nome}, cliente ${Nome_Completo}`)
+            return  console.log(`venda registrada com sucesso`)
         } 
         catch (error) {
-            console.log('produto ou cliente não enncontrado')
+          return  console.log('produto ou cliente não enncontrado')
         }
 
   }
@@ -150,3 +155,5 @@ const resolvers = {
     }
 }
 module.exports = resolvers
+
+

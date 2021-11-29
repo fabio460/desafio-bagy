@@ -1,9 +1,12 @@
                                     DOCUMENTO DA DESAFIO BAGY
 
+O objetivo desta api é: Registrar uma venda (criar pedido no banco de dados) sendo que, ao criar o pedido, automaticamente a quantidade do produto é decrementado e um email é enviado ao usuário registrado com as informações da compra
+   
 
 Projeto Back-End usando Node.js com SQLITE e GraphQl.
 Api rodando na porta 4000, cujo link é: http://localhost:4000/ 
-
+ 
+Foi utilizado o Jest para o teste automatizado
 
 MUTATIONS:
 
