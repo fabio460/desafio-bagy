@@ -11,19 +11,19 @@ const typeDefs = gql`
         nome:String
     }
     type Produto{
-        id:ID!,  
-        nome:String!,
+        id:ID,  
+        nome:String,
         imagem:String,
         descricao:String,
-        peso:String!,
-        preco:String!,
-        quantidade:String!,
+        peso:String,
+        preco:String,
+        quantidade:String,
     }
     type Clientes{
-        id:ID!,
-        Nome_Completo:String!,
-        Email:String!,
-        CPF:String!,
+        id:ID,
+        Nome_Completo:String,
+        Email:String,
+        CPF:String,
         Data_de_nascimento:String,
         Rua:String,
         Bairro:String,
@@ -34,12 +34,12 @@ const typeDefs = gql`
         Numero:String,
     }
     type Pedidos{
-        id:ID!,
-        id_produto:String!,
-        DataDeCriacao:String!,
-        Parcelas:String!,
-        id_comprador:String!,
-        Status:String!
+        id:ID,
+        id_produto:String,
+        DataDeCriacao:String,
+        Parcelas:String,
+        id_comprador:String,
+        Status:String
     }
     type Query{
         produto:[Produto]

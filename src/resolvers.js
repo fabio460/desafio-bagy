@@ -7,6 +7,7 @@ const run = require('./mailer')
 
 
 
+
 //GETs
 const listarProduto =async ()=>{
     let res = await modelProduto.findAll()
@@ -20,10 +21,6 @@ const listarProduto =async ()=>{
       return await modelPedido.findAll()
   }
 
-
-
-
-
   //POSTs
   const inserirProduto = (nome,imagem,descricao,peso,preco,quantidade)=>{
       try {
@@ -31,6 +28,7 @@ const listarProduto =async ()=>{
             nome,imagem,descricao,peso,preco,quantidade
          })   
          console.log('produto cadastrado com sucesso')
+         return 200
       } 
       catch (error) {
         console.log('falha ao inserir produto, insira todos os campos')
@@ -45,7 +43,8 @@ const listarProduto =async ()=>{
             Data_de_nascimento,
             Rua,Bairro,Cidade,Estado,Pais,CEP,Numero
         })    
-        console.log('cliente cadastrado com sucesso')
+         console.log('cliente cadastrado com sucesso')
+         return 200
     } 
     catch (error) {
         console.log('campos obrigatórios não inseridos')
@@ -71,13 +70,13 @@ const listarProduto =async ()=>{
      }
   }
   
-
+  
 
   //Registrando uma venda
   const registrarVenda =async (id_produto,DataDeCriacao,Parcelas,id_comprador,Status)=>{
         //a quantidade teve que ser tratada pois veio como objeto
         let [quantidade] =await sequelize.query("select quantidade from produtos")
-        let quantidade_tratada = quantidade[0].quantidade - 1
+        let quantidade_tratada =await quantidade[0].quantidade - 1
     
         try {
                     //pegar produto por id 
@@ -86,7 +85,7 @@ const listarProduto =async ()=>{
                         id : id_produto
                     }
                 })
-                const {id,nome,descricao,preco} = produto[0].dataValues
+                const {id,nome,descricao,preco} =await produto[0].dataValues
 
                 //pegar cliente por id
                 const cliente = await modelClientes.findAll({
@@ -94,7 +93,7 @@ const listarProduto =async ()=>{
                         id:id_comprador
                     }
                 })
-                const {Email,Nome_Completo} = cliente[0].dataValues
+                const {Email,Nome_Completo} =await cliente[0].dataValues
 
 
                 const informacoesParaOCliente = `
@@ -123,16 +122,15 @@ const listarProduto =async ()=>{
             }
            
             console.log(`produto ${nome}, cliente ${Nome_Completo}`)
-            return  console.log(`venda registrada com sucesso`)
+            console.log(`venda registrada com sucesso`)
+            return 200
         } 
         catch (error) {
-          return  console.log('produto ou cliente não enncontrado')
+          console.log('falha na criação do pedido, motivo: '+error)  
+          return 401
         }
 
   }
-
-
-
 // Resolver
 const resolvers = {
     Query:{
@@ -144,16 +142,18 @@ const resolvers = {
     },
     Mutation:{
         criarProduto: (_,{nome,imagem,descricao,peso,preco,quantidade})=>{
-            inserirProduto(nome,imagem,descricao,peso,preco,quantidade)
+           return inserirProduto(nome,imagem,descricao,peso,preco,quantidade)
         },
         cadastrarCliente: (_,{Nome_Completo,Email,CPF,Data_de_nascimento,Rua,Bairro,Cidade,Estado,Pais,CEP,Numero})=>{
-             cadastrarClientes(Nome_Completo,Email,CPF,Data_de_nascimento,Rua,Bairro,Cidade,Estado,Pais,CEP,Numero)
+           return  cadastrarClientes(Nome_Completo,Email,CPF,Data_de_nascimento,Rua,Bairro,Cidade,Estado,Pais,CEP,Numero)
         },
         criarPedido: (_,{id_produto,DataDeCriacao,Parcelas,id_comprador,Status})=>{
-           registrarVenda(id_produto,DataDeCriacao,Parcelas,id_comprador,Status)
+          return registrarVenda(id_produto,DataDeCriacao,Parcelas,id_comprador,Status)
         }
     }
 }
 module.exports = resolvers
 
+//const p = resolvers.Mutation.criarPedido("1","a","a","1","a")
+//console.log(p)
 
