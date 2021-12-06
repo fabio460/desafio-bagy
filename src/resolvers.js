@@ -21,6 +21,8 @@ const listarProduto =async ()=>{
       return await modelPedido.findAll()
   }
 
+
+
   //POSTs
   const inserirProduto = (nome,imagem,descricao,peso,preco,quantidade)=>{
       try {
@@ -53,12 +55,10 @@ const listarProduto =async ()=>{
   
 
 
-  //funções necessarias
+  //funções necessarias, envio de email e remover estoque
   const enviarEmail = (emailDaEmpresa,emailDoCliente,informacoes,assuntoDoEmail,nomeDaEmpresa)=>{
     run(emailDaEmpresa,emailDoCliente,informacoes,assuntoDoEmail,nomeDaEmpresa)
   }
-  
-
   const removerQuantidadeEstoque =async (idProd,num)=>{
      try {
       modelProduto.update(
@@ -69,14 +69,40 @@ const listarProduto =async ()=>{
          console.log(error)
      }
   }
-  
-  
+
+
+
+
+  //funções auxiliares para deletar nulos
+  const deletarProduto = ()=>{
+      try {
+          modelProduto.destroy({
+              where:{nome:null}
+          })
+          console.log('produtos nulos removidos com sucesso')
+      } catch (error) {
+          console.log(error)
+      }
+  }
+  const deletarCliente = ()=>{
+    try {
+        modelClientes.destroy({
+            where:{Nome_Completo:null}
+        })
+        console.log('cliente nulos removidos')
+    } catch (error) {
+        console.log("falha ao deletar "+error)
+    }
+}
+
+
+
 
   //Registrando uma venda
   const registrarVenda =async (id_produto,DataDeCriacao,Parcelas,id_comprador,Status)=>{
         //a quantidade teve que ser tratada pois veio como objeto
         let [quantidade] =await sequelize.query("select quantidade from produtos")
-        let quantidade_tratada =await quantidade[0].quantidade - 1
+        let quantidade_tratada = quantidade[0].quantidade - 1
     
         try {
                     //pegar produto por id 
@@ -85,7 +111,7 @@ const listarProduto =async ()=>{
                         id : id_produto
                     }
                 })
-                const {id,nome,descricao,preco} =await produto[0].dataValues
+                const {id,nome,descricao,preco} = produto[0].dataValues
 
                 //pegar cliente por id
                 const cliente = await modelClientes.findAll({
@@ -93,7 +119,7 @@ const listarProduto =async ()=>{
                         id:id_comprador
                     }
                 })
-                const {Email,Nome_Completo} =await cliente[0].dataValues
+                const {Email,Nome_Completo} = cliente[0].dataValues
 
 
                 const informacoesParaOCliente = `
@@ -103,12 +129,14 @@ const listarProduto =async ()=>{
                 no valor de R$ ${preco} reais
                 
             `
-            const emailDaEmpresa = "fabio.alternativo.silva@gmail.com"
-            const assuntoDoEmail = "compra efetuada com sucesso"
-            const nomeDaEmpresa = "Bagy"
+
             if(quantidade_tratada > 0){
-                const id_prod = await modelProduto.findAll()
-                const id_cli = await modelClientes.findAll()
+                const id_prod = await modelProduto.findAll({
+                    where:{id:id_produto}
+                })
+                const id_cli = await modelClientes.findAll({
+                    where:{id:id_comprador}
+                })
                 modelPedido.create({
                     id_produto:id_prod[0].dataValues.id ,
                     DataDeCriacao,
@@ -118,6 +146,10 @@ const listarProduto =async ()=>{
                 })
                 removerQuantidadeEstoque(id_produto,quantidade_tratada)
     
+
+                const emailDaEmpresa = "fabio.alternativo.silva@gmail.com"
+                const assuntoDoEmail = "compra efetuada com sucesso"
+                const nomeDaEmpresa = "Bagy"
                 enviarEmail(emailDaEmpresa,Email,informacoesParaOCliente,assuntoDoEmail,nomeDaEmpresa)
             }
            
@@ -126,34 +158,43 @@ const listarProduto =async ()=>{
             return 200
         } 
         catch (error) {
-          console.log('falha na criação do pedido, motivo: '+error)  
+          console.log('falha ao criar pedido: '+error)  
           return 401
         }
 
   }
-// Resolver
+
+
+
+// Resolvers
 const resolvers = {
     Query:{
-        produto: ()=>{
-            return listarProduto()
-        },
+        produto: ()=>listarProduto(),
         clientes: ()=> listarClientes(),
         pedidos: ()=>listarPedidos()
     },
     Mutation:{
         criarProduto: (_,{nome,imagem,descricao,peso,preco,quantidade})=>{
-           return inserirProduto(nome,imagem,descricao,peso,preco,quantidade)
+           if(nome !== null){
+              return inserirProduto(nome,imagem,descricao,peso,preco,quantidade)
+           }
         },
         cadastrarCliente: (_,{Nome_Completo,Email,CPF,Data_de_nascimento,Rua,Bairro,Cidade,Estado,Pais,CEP,Numero})=>{
-           return  cadastrarClientes(Nome_Completo,Email,CPF,Data_de_nascimento,Rua,Bairro,Cidade,Estado,Pais,CEP,Numero)
+           if(Nome_Completo !== null ){
+            return  cadastrarClientes(Nome_Completo,Email,CPF,Data_de_nascimento,Rua,Bairro,Cidade,Estado,Pais,CEP,Numero)
+           }
         },
         criarPedido: (_,{id_produto,DataDeCriacao,Parcelas,id_comprador,Status})=>{
           return registrarVenda(id_produto,DataDeCriacao,Parcelas,id_comprador,Status)
+        },
+        deletarClienteNulo: (_,)=>{
+            return deletarCliente()
+        },
+        deletarProdutoNulo:(_,)=>{
+            return deletarProduto()
         }
     }
 }
 module.exports = resolvers
 
-//const p = resolvers.Mutation.criarPedido("1","a","a","1","a")
-//console.log(p)
 

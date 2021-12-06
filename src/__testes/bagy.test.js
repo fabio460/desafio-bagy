@@ -4,7 +4,7 @@ const removerQuantidadeEstoque = require('../resolvers')
 describe("teste das funções principais",()=>{
  
     it("teste de produto",async ()=>{
-        const p = await resolvers.Query.produto().then(res=>res[0].dataValues.nome)
+        const p = await resolvers.Query.produto().then(res=>res[2].dataValues.nome)
         expect(p).toBe("Galaxy S21")
     })
     it("teste de clientes",async ()=>{
@@ -25,7 +25,7 @@ describe("teste das funções principais",()=>{
     })
     it("teste registro de venda",async()=>{
         const p =await resolvers.Mutation.criarPedido("1","27/11/2021","1","1","efetuado")
-        //expect(p).toBe(200)
+        expect(p).toBe(200)
     })
     
 })
